@@ -1,0 +1,208 @@
+<html><head><base href="https://www.calculator.ru/" /><title>Калькулятор инвестиций с компактной таблицей</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+    }
+    .calculator {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        width: 90%;
+        max-width: 800px;
+    }
+    h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+    label {
+        display: block;
+        margin-top: 15px;
+        color: #555;
+        font-size: 14px;
+    }
+    input {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-size: 14px;
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 20px;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+    button:hover {
+        background-color: #45a049;
+    }
+    .result-container {
+        margin-top: 20px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+    }
+    .result-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 14px;
+    }
+    .result-label {
+        font-weight: bold;
+        color: #333;
+    }
+    .result-value {
+        color: #4CAF50;
+    }
+    .table-container {
+        overflow-x: auto;
+        margin-top: 20px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 6px;
+        text-align: right;
+    }
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+        color: #333;
+    }
+    tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    .input-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+    .input-group > div {
+        flex: 1 0 calc(50% - 10px);
+        min-width: 200px;
+    }
+</style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Калькулятор инвестиций</h1>
+        <div class="input-group">
+            <div>
+                <label for="initial-deposit">Начальный депозит (руб):</label>
+                <input type="number" id="initial-deposit" placeholder="Например, 100000">
+            </div>
+            <div>
+                <label for="monthly-interest">Прибыль процентов в месяц (%):</label>
+                <input type="number" id="monthly-interest" step="0.01" placeholder="Например, 1.5">
+            </div>
+            <div>
+                <label for="monthly-investment">Ежемесячные инвестиции (руб):</label>
+                <input type="number" id="monthly-investment" placeholder="Например, 10000">
+            </div>
+            <div>
+                <label for="months">Количество месяцев:</label>
+                <input type="number" id="months" placeholder="Например, 12">
+            </div>
+        </div>
+        
+        <button onclick="calculateInvestment()">Рассчитать</button>
+        
+        <div class="result-container" id="result-container" style="display: none;">
+            <div class="result-item">
+                <span class="result-label">Итоговая сумма:</span>
+                <span class="result-value" id="total-amount"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Общий доход:</span>
+                <span class="result-value" id="total-profit"></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Сумма вложений:</span>
+                <span class="result-value" id="total-invested"></span>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="results-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>Месяц</th>
+                        <th>Нач. баланс</th>
+                        <th>Инвестиция</th>
+                        <th>Доход</th>
+                        <th>Итог. баланс</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function calculateInvestment() {
+            const initialDeposit = parseFloat(document.getElementById('initial-deposit').value);
+            const monthlyInterest = parseFloat(document.getElementById('monthly-interest').value) / 100;
+            const monthlyInvestment = parseFloat(document.getElementById('monthly-investment').value);
+            const months = parseInt(document.getElementById('months').value);
+            
+            if (isNaN(initialDeposit) || isNaN(monthlyInterest) || isNaN(monthlyInvestment) || isNaN(months)) {
+                alert('Пожалуйста, введите корректные числовые значения во все поля.');
+                return;
+            }
+            
+            let totalAmount = initialDeposit;
+            let totalInvested = initialDeposit;
+            let tableBody = document.getElementById('results-body');
+            tableBody.innerHTML = '';
+            
+            for (let i = 1; i <= months; i++) {
+                let startBalance = totalAmount;
+                totalAmount += monthlyInvestment;
+                let interestEarned = totalAmount * monthlyInterest;
+                totalAmount += interestEarned;
+                totalInvested += monthlyInvestment;
+
+                let row = tableBody.insertRow();
+                row.insertCell(0).textContent = i;
+                row.insertCell(1).textContent = startBalance.toFixed(0);
+                row.insertCell(2).textContent = monthlyInvestment.toFixed(0);
+                row.insertCell(3).textContent = interestEarned.toFixed(0);
+                row.insertCell(4).textContent = totalAmount.toFixed(0);
+            }
+            
+            const totalProfit = totalAmount - totalInvested;
+            
+            document.getElementById('total-amount').textContent = totalAmount.toFixed(2) + ' руб';
+            document.getElementById('total-profit').textContent = totalProfit.toFixed(2) + ' руб';
+            document.getElementById('total-invested').textContent = totalInvested.toFixed(2) + ' руб';
+            
+            document.getElementById('result-container').style.display = 'block';
+            document.getElementById('results-table').style.display = 'table';
+        }
+    </script>
+</body></html>
